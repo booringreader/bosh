@@ -1,7 +1,7 @@
 #include<stdio.h>
 #include<string.h>
 // custom header file to link all others
-#include "shell.h"
+#include "shell/shell.h"
 #include<stdlib.h>
 #include<errno.h>
 #define true 1

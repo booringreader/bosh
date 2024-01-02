@@ -1,5 +1,5 @@
 #include<stdio.h>
-#include "shell.h"
+#include "shell/shell.h"
 
 void print_prompt1(void){
     fprintf(stderr, "$ ");

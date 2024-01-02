@@ -73,7 +73,7 @@ char peek_char(struct source_s *src){
     
     pos++; // no utility in using else since this would be the only other case
 
-    if(pos => src->buffersize){
+    if(pos >= src->buffersize){
         return EOF; // returns the char 'EOF' which will be replaced by -1 during preprocessing. this 'EOF' is not the one used during file handling
     }
     return src->buffer[pos];

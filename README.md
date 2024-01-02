@@ -23,3 +23,7 @@ To use the shell, compile the source files and link them together.
 For example:
 ```bash
 gcc main.c initsh.c prompt.c executor/executor.c parser/parser.c scanner/scanner.c source/source.c -o my_shell
+```
+## License
+
+This project is licensed under the [MIT License](LICENSE).

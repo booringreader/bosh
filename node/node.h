@@ -55,4 +55,6 @@ void set_node_val_str(struct node_s *node, char *val);
 * node_type_e : command (if root) or var (child)
 * val_type : val_str 
 * val.str : pointer to the string value
+*/
+
 #endif

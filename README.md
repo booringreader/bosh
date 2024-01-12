@@ -9,6 +9,8 @@ This project implements a basic shell with modularized components.
 - `main.c`: Main entry point of the shell.
 - `shell/`: Core functionalities of the shell.
 - `prompt.c`: Managing the shell prompt appearance.
+- `parser/`: Directory for parsing functionalities.
+- `node/`: Directory for command structure (AST) representation.
 
 ## Usage
 

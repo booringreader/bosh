@@ -11,9 +11,9 @@ This project implements a basic shell with modularized components.
 - `prompt.c`: Managing the shell prompt appearance.
 - `parser/`: Directory for parsing functionalities.
 - `node/`: Directory for command structure (AST) representation.
+- `executor/`: Directory for execution-related functionalities.
 <!--- 
  `builtins/`: Directory for built-in command implementations.
- `executor/`: Directory for execution-related functionalities.
  `initsh.c`: Initialization routines for the shell.
  `symtab/`: Directory for symbol table-related files. 
  --->

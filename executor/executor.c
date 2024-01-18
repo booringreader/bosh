@@ -19,6 +19,16 @@
             a- use stat() func. and structure; to check if the file is in the structure
         vi- perform furthur checks using macros for the type and mdoe of file
         vii- then return the path value if every check is passed
+* step3 : function to execute command line input
+        i- if the input command has '/' then it will be treated as path and directly passed into execv()
+            a- execv(path to the executable, array of strings (pointer to command)
+        ii- if '/' is not in command then search_path is passed to retrieve the path string
+* step4 : function to free memory allocated to each string (inside pointer array argv) assuming it was allocated dynamically
+        i- the memory allocated to the array itself is not freed yet
+* step5 : main function of the executor
+        i-exception handling for structure existence
+        ii- out the root node (node passed) of AST pull out the command(first child)
+        iii- 
 */
 
 char *search_path(char *file){ // func. that takes char and returns a pointer to char
@@ -79,3 +89,19 @@ char *search_path(char *file){ // func. that takes char and returns a pointer to
     errno = ENOENT;  // while loop checks whether the PATH values exist && whether the pointer is dangling
     return NULL; 
 }
+
+int do_exec_cmd(int *argc, char **argv){ //pointer to array argv
+    if(strchr(argv[0], '/')){ // if there is '/' in the first string
+        execv(argv[0], argv);
+    }     // execv() to replace current process (OS) with other
+    else{
+        char *path = search_path(argv[0]);
+        if(!path){
+            return 0;
+        }
+        execv(path, argv);
+        free(path); // dynamically allocated but not freed in search_path()
+    }
+    return 0;
+}
+

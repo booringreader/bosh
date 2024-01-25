@@ -105,3 +105,12 @@ int do_exec_cmd(int *argc, char **argv){ //pointer to array argv
     return 0;
 }
 
+static inline void free_argv(int argc, char **argv){
+	if(!argc){ // no input
+	     return;
+	}
+
+	while(argc--){
+	    free(argv[argc]);
+	}
+}

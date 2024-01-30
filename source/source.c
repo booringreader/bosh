@@ -30,7 +30,7 @@ char next_char(struct source_s *src){
         c1 = src->buffer[src->currentpos];
     }
     // when currentpos is at the very end of input string i.e last character
-    if(++src->currentpos => src->buffersize){
+    if(++src->currentpos >= src->buffersize){
         src->currentpos = src->buffersize;
         return EOF; // end of input string
     }
@@ -90,7 +90,7 @@ void skip_white_spaces(struct source_s *src){
     }
     char c; // to store peeked value (step2)
 
-    if((c=peek_char(src) != EOF) && c==" " || c=="\t"){
+    while(((c=peek_char(src)) != EOF) && (c==' ' || c=='\t')){
         next_char(src); // shifts the position tracking pointer to next index and returns its value
     }
 }

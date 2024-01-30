@@ -10,8 +10,8 @@
 */
 
 enum node_type_e{
-    NODE COMMAND, // root node of the command passed (represents the entire AST)
-    NODE VAR, // breaks down the command and argument into child nodes
+    NODE_COMMAND, // root node of the command passed (represents the entire AST)
+    NODE_VAR, // breaks down the command and argument into child nodes
 };
 
 enum val_type_e{
@@ -45,7 +45,7 @@ struct node_s {
     struct node_s *prev_sibling, *next_sibling; // pointer to node pods which are prev and next siblings
 };
 
-struct node_s *new_node(enum node_type_e *type);
+struct node_s *new_node(enum node_type_e type);
 void add_child_node(struct node_s *parent, struct node_s *child);
 void free_node_tree(struct node_s *node);
 void set_node_val_str(struct node_s *node, char *val);

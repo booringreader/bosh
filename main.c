@@ -4,44 +4,51 @@
 #include "shell/shell.h"
 #include<stdlib.h>
 #include<errno.h>
+#include "parser/parser.h"
+#include "source/source.h"
+#include "executor/executor.h"
 #define true 1
 
 int main(int argc, char *argv[]){
-    char *cla;
+    char *cmd;
 
     do{
         // print the dollar sign to indicate the user to type something
        // use pointer to read command line argument as input
         print_prompt1();
 
-        cla = read_cla();
+        cmd = read_cmd();
         // possibilities in reading input and corresponding responses
 
         // if error in reading input, exit
-        if(!cla){
+        if(!cmd){
             exit(EXIT_SUCCESS);
         }
 
         // if first character is NULL or the user has pressed enter at any point
-        if(cla[0]=='\0' || strcmp(cla, "\n") == 0){
-            free(cla);
+        if(cmd[0]=='\0' || strcmp(cmd, "\n") == 0){
+            free(cmd);
             continue;
         }
         
         // if pointer reads exit from command line, exit
-        if(strcmp(cla, "exit\n") == 0){
-            free(cla);
+        if(strcmp(cmd, "exit\n") == 0){
+            free(cmd);
             exit(EXIT_SUCCESS);
         }
         // print whatever the input argument was
-        printf("%s", cla);
-        free(cla);
+	struct source_s src;
+	src.buffer = cmd;
+	src.buffersize = strlen(cmd);
+	src.currentpos = INIT_SRC_POS;
+	parse_and_execute(&src);
+        free(cmd);
     }while(true);
     
     exit(EXIT_SUCCESS);
 }
 
-char *read_cla(void){
+char *read_cmd(void){
     //to read input in chunks of 1024 bytes
     char buf[1024];
     char *ptr = NULL;
@@ -119,3 +126,22 @@ char *read_cla(void){
     return ptr;
 }   
 
+int parse_and_execute(struct source_s *src){
+	skip_white_spaces(src);
+
+	struct token_s *tok = tokenize(src);
+	if(tok == &eof_token){
+		return 0;
+	}
+
+	while(tok && tok != &eof_token){
+		struct node_s *cmd = parse_simple_command(tok);
+		if(!cmd){
+			break;
+		}
+	do_simple_command(cmd);
+	free_node_tree(cmd);
+	tok = tokenize(src);
+	}
+	return 1;
+}

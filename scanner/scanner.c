@@ -4,7 +4,7 @@
 #include<string.h>
 #include"../shell/shell.h" // has prompt definitions
 #include"scanner.h"
-#include"../source.h"  // has definition of struct source_s
+#include"../source/source.h"  // has definition of struct source_s
 
 /*
 * step1 : declare variables to keep track of the token buffer (buffer refers to the memory block [generally array])
@@ -31,7 +31,7 @@ int tok_buffsize = 0; // initially
 char *tok_buff = NULL;
 
 struct token_s eof_token={
-    .text_len = 0;
+    .text_len = 0,
 };
 
 void add_to_buffer(char c){
@@ -57,7 +57,7 @@ void add_to_buffer(char c){
 
 // create_token takes a string as input and returns a token structure
 
-struct token_s create_token(char *str){
+struct token_s *create_token(char *str){
     struct token_s *tok = malloc(sizeof(struct token_s));
 
     //exception handling
@@ -110,7 +110,7 @@ struct token_s *tokenize(struct source_s *src){
     //implies to keep scanning forward
     if(!src || !src->buffer || !src->buffersize){ // validity of structure pointer, and pointers inside structure
         errno = ENODATA;
-        return eof_token;
+        return &eof_token;
     }
 
     if(!tok_buff){ //checks validity of text buffer
@@ -120,7 +120,7 @@ struct token_s *tokenize(struct source_s *src){
         //if memory not allocated, then no mem available
         if(!tok_buff){
             errno=ENOMEM;
-            return &eof_tok; // since func returns a pointer
+            return &eof_token; // since func returns a pointer
         }
     }
 
@@ -165,7 +165,7 @@ struct token_s *tokenize(struct source_s *src){
     }while((ch=next_char(src)) != EOF); // ch = ... necessary to keep on iterating
 
     // case of no input except delimiting characters
-    if(tok_bufindex == 0){
+    if(tok_buffindex == 0){
         return &eof_token;
     }
 

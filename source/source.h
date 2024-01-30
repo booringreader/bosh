@@ -21,7 +21,7 @@ void unget_char(struct source_s *src);
 /*
 * to look at the next character in the input without retrieving it i.e the pointer tracking the current location is the same position but can still feed the scanner with the next input character
 */
-char peek_char(struct source_s *src)
+char peek_char(struct source_s *src);
 
 // skip white spaces
 void skip_white_spaces(struct source_s *src);

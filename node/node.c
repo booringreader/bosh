@@ -28,7 +28,7 @@
         3- free the string pointer (if not already NULL)
 */
 
-struct node_s *new_node(enum node_type_e *type){
+struct node_s *new_node(enum node_type_e type){
     struct node_s *node = malloc(sizeof(struct node_s));
 
     if(!node){ // if node pointer NULL
@@ -43,7 +43,7 @@ struct node_s *new_node(enum node_type_e *type){
 void add_child_node(struct node_s *parent, struct node_s *child){
     // incase parent or child are NULL
     if(!parent || !child){
-        return NULL;
+        return;
     }
 
     if(!parent->first_child){ // if no first child then, passed argument is the first child
@@ -67,7 +67,7 @@ void set_node_val_str(struct node_s *node, char *val){
     if(!val){
         node->val.str = NULL; 
     }else{
-        char *val2 malloc(strlen(val)+1); //strlen won't count '\0'
+        char *val2 = malloc(strlen(val)+1); //strlen won't count '\0'
         if(!val2){
             node->val.str = NULL;
         }else{
@@ -90,9 +90,9 @@ void free_node_tree(struct node_s *node){ // selected node will be freed i.e mem
     }
 
     // free the string
-    if(node->val_type = VAL_STR){
+    if(node->val_type == VAL_STR){
      if(node->val.str){
-        free(node->free.str);
+        free(node->val.str);
     }
     }
 

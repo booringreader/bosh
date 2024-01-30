@@ -15,7 +15,7 @@ struct node_s *parse_simple_command(struct token_s *tok){
     if(!tok){
         return NULL;
     }
-    struct node_s *cmd = new_node(NODE COMMAND); // creates a root node (stores pointers to all info about the input i.e command and arguments)
+    struct node_s *cmd = new_node(NODE_COMMAND); // creates a root node (stores pointers to all info about the input i.e command and arguments)
 
     // if the root node is garbage, remove the respective token from AST conversion list
     if(!cmd){
@@ -26,20 +26,20 @@ struct node_s *parse_simple_command(struct token_s *tok){
     struct source_s *src = tok->src; // (for the sake of modularity we will use the following loop to assign tokenizable text to the function instead of letting the function itself choose the source src)
 
     do{
-        if(tok->text[0] = '\n'){ // first character in the token is new line
+        if(tok->text[0] == '\n'){ // first character in the token is new line
             free_token(tok);
             break; // if the token is new line, we don't need to do anything with it except move on to the next one
         }
 
         // the root node is formed, time to segment it into child(coommand) and siblings (arguments)
-        struct node_s *word = new_node(NODE VAR);
+        struct node_s *word = new_node(NODE_VAR);
 
         if(!word){
             free_node_tree(cmd); // (?)
             free_token(tok);
             return NULL;
         }
-        set_nod_value_str(word, tok->text); // give the node some value
+        set_node_val_str(word, tok->text); // give the node some value
         add_child_node(cmd, word);
 
         free_token(tok); // token added to the tree; free it and move to next one

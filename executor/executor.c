@@ -48,18 +48,18 @@ char *search_path(char *file){ // func. that takes char and returns a pointer to
         }
 
         int alen= strlen(file);
-        int path[plen+1/*for '/' */+alen+1/*for '\0'*/];
+        char path[plen+1/*for '/' */+alen+1/*for '\0'*/];
        strncpy(path, p, p2-p); // copy specific length of string to array (source, dest, len)
-
+ path[p2-p] = '\0'; // adds null to mark the end of string
+ 
        // pulled out the directory name from PATH variable and copied it into an array to perform operations using it
        // now we can work on marinating the file executable by joining the path of directory with the file name; this is assuming that the directory has the corresponding executable surely. e.g. /usr/bin + /file_name
 
        //first we perform checks on the file, for this first get the information on the file using sys/stat header file functionalities
         if(p2[-1] != '/'){ //checks whether the previous char to p2 is a / or not; p2[0] denotes the current memory address pointer is on
-            strcat(path, '/'); // appends / to path after directory
+            strcat(path, "/"); // appends / to path after directory
         }
-        path[p2-p] = '\0'; // adds null to mark the end of string
-        strcat(path,file); // concatenate file name at the end
+              strcat(path,file); // concatenate file name at the end
 
         // now we use stat() to retrieve info about the file and perform some checks on it
 
@@ -73,7 +73,7 @@ char *search_path(char *file){ // func. that takes char and returns a pointer to
                 }
                 continue; // exists this if block
             }
-            *p = malloc(strlen(path)+1); // path array is local, dynamic allocation ensures that array data exists after function termination
+            p = malloc(strlen(path)+1); // path array is local, dynamic allocation ensures that array data exists after function termination
             if(!p){
                 return NULL;
             }
@@ -90,7 +90,7 @@ char *search_path(char *file){ // func. that takes char and returns a pointer to
     return NULL; 
 }
 
-int do_exec_cmd(int *argc, char **argv){ //pointer to array argv
+int do_exec_cmd(int argc, char **argv){ //pointer to array argv
     if(strchr(argv[0], '/')){ // if there is '/' in the first string
         execv(argv[0], argv);
     }     // execv() to replace current process (OS) with other
@@ -105,12 +105,85 @@ int do_exec_cmd(int *argc, char **argv){ //pointer to array argv
     return 0;
 }
 
-static inline void free_argv(int argc, char **argv){
-	if(!argc){ // no input
-	     return;
-	}
+static inline void free_argv(int argc, char **argv)
+{
+    if(!argc)
+    {
+        return;
+    }
 
-	while(argc--){
-	    free(argv[argc]);
-	}
+    while(argc--)
+    {
+        free(argv[argc]);
+    }
+}
+
+
+int do_simple_command(struct node_s *node)
+{
+    if(!node)
+    {
+        return 0;
+    }
+
+    struct node_s *child = node->first_child;
+    if(!child)
+    {
+        return 0;
+    }
+
+    int argc = 0;
+    long max_args = 255;
+    char *argv[max_args+1];     /* keep 1 for the terminating NULL arg */
+    char *str;
+
+    while(child)
+    {
+        str = child->val.str;
+        argv[argc] = malloc(strlen(str)+1);
+
+        if(!argv[argc])
+        {
+            free_argv(argc, argv);
+            return 0;
+        }
+
+        strcpy(argv[argc], str);
+        if(++argc >= max_args)
+        {
+            break;
+        }
+        child = child->next_sibling;
+    }
+    argv[argc] = NULL;
+
+    pid_t child_pid = 0;
+    if((child_pid = fork()) == 0)
+    {
+        do_exec_cmd(argc, argv);
+        fprintf(stderr, "error: failed to execute command: %s\n", strerror(errno));
+        if(errno == ENOEXEC)
+        {
+            exit(126);
+        }
+        else if(errno == ENOENT)
+        {
+            exit(127);
+        }
+        else
+        {
+            exit(EXIT_FAILURE);
+        }
+    }
+    else if(child_pid < 0)
+    {
+        fprintf(stderr, "error: failed to fork command: %s\n", strerror(errno));
+        return 0;
+    }
+
+    int status = 0;
+    waitpid(child_pid, &status, 0);
+    free_argv(argc, argv);
+
+    return 1;
 }

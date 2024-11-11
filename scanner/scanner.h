@@ -15,13 +15,15 @@
 
 struct token_s{
     struct source_s *src;
-    char *text; // keeps track of token characters
-    int text_len; // keeps record of length of token;
+    char *token_char; // keeps track of token characters
+    int token_len; // keeps record of length of token; to avoid calling strlen()
 };
 
-extern struct token_s eof_token; // eof named eof_token is created
+extern struct token_s eof_token; // special EOF token, indicates end of input 
 
-struct token_s *tokenize(struct source_s *src); // function declaration to tokenize the next character from input
+// function declaration to tokenize the next character from input
+// retrieve the next token from the input
+struct token_s *tokenize(struct source_s *src);
 void free_token(struct token_s *tok); // helper function that takes pointer 'tok' as argument and returns nothing
 
 #endif

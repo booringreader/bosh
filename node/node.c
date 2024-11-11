@@ -67,7 +67,7 @@ void set_node_val_str(struct node_s *node, char *val){
     if(!val){
         node->val.str = NULL; 
     }else{
-        char *val2 malloc(strlen(val)+1); //strlen won't count '\0'
+        char *val2 = malloc(strlen(val)+1); //strlen won't count '\0'
         if(!val2){
             node->val.str = NULL;
         }else{
@@ -92,7 +92,7 @@ void free_node_tree(struct node_s *node){ // selected node will be freed i.e mem
     // free the string
     if(node->val_type = VAL_STR){
      if(node->val.str){
-        free(node->free.str);
+        free(node->val.str);
     }
     }
 

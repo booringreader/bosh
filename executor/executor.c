@@ -1,13 +1,13 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<unistd.h>
-#include<string.h>
-#include<errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
 #include "../shell/shell.h" // prompt
 #include "executor.h"
 #include "../node/node.h" // has AST structure
-#include <sys/stat.h> // contains func for file info and status (strictly for system calls)
-#include <sys/wait.h> // func. for process management
+#include <sys/stat.h>     // contains func for file info and status (strictly for system calls)
+#include <sys/wait.h>     // func. for process management
 
 /*
 * step1 : function to search passed command's executable
@@ -28,75 +28,91 @@
 * step5 : main function of the executor
         i-exception handling for structure existence
         ii- out the root node (node passed) of AST pull out the command(first child)
-        iii- 
+        iii-
 */
 
-char *search_path(char *file){ // func. that takes char and returns a pointer to char
+char *search_path(char *file)
+{                                // func. that takes char and returns a pointer to char
     char *PATH = getenv("PATH"); // to track the path variable all the times (p and p2 will be used for other purposes too)
-    char *p = PATH; // to track the beginning of a new directory path
-    char *p2; // to track the end of the directory path
+    char *p = PATH;              // to track the beginning of a new directory path
+    char *p2;                    // to track the end of the directory path
 
-    while(p && *p){ // p checks for NULL pointer & *p for the NULL in PATH
-       p2 = p; // same starting point
-       while(*p2 && *p2 != ':'){ // if p2 is not NULL and the corresponding value is not : (since this marks the end of directory)
-       // using *p2 insted of p2 to track the end of PATH simultaeneously
+    while (p && *p)
+    {           // p checks for NULL pointer & *p for the NULL in PATH
+        p2 = p; // same starting point
+        while (*p2 && *p2 != ':')
+        {         // if p2 is not NULL and the corresponding value is not : (since this marks the end of directory)
+                  // using *p2 insted of p2 to track the end of PATH simultaeneously
             p2++; // keep moving to the succeeding chars
         }
-        int plen = p2-p; // length of the directory path
-        if(!plen){ // if length of directory path is 0, then
+        int plen = p2 - p; // length of the directory path
+        if (!plen)
+        {             // if length of directory path is 0, then
             plen = 1; // assign one byte for the NULL character
         }
 
-        int alen= strlen(file);
-        int path[plen+1/*for '/' */+alen+1/*for '\0'*/];
-       strncpy(path, p, p2-p); // copy specific length of string to array (source, dest, len)
+        int alen = strlen(file);
+        int path[plen + 1 /*for '/' */ + alen + 1 /*for '\0'*/];
+        strncpy(path, p, p2 - p); // copy specific length of string to array (source, dest, len)
 
-       // pulled out the directory name from PATH variable and copied it into an array to perform operations using it
-       // now we can work on marinating the file executable by joining the path of directory with the file name; this is assuming that the directory has the corresponding executable surely. e.g. /usr/bin + /file_name
+        // pulled out the directory name from PATH variable and copied it into an array to perform operations using it
+        // now we can work on marinating the file executable by joining the path of directory with the file name; this is assuming that the directory has the corresponding executable surely. e.g. /usr/bin + /file_name
 
-       //first we perform checks on the file, for this first get the information on the file using sys/stat header file functionalities
-        if(p2[-1] != '/'){ //checks whether the previous char to p2 is a / or not; p2[0] denotes the current memory address pointer is on
+        // first we perform checks on the file, for this first get the information on the file using sys/stat header file functionalities
+        if (p2[-1] != '/')
+        {                      // checks whether the previous char to p2 is a / or not; p2[0] denotes the current memory address pointer is on
             strcat(path, '/'); // appends / to path after directory
         }
-        path[p2-p] = '\0'; // adds null to mark the end of string
-        strcat(path,file); // concatenate file name at the end
+        path[p2 - p] = '\0'; // adds null to mark the end of string
+        strcat(path, file);  // concatenate file name at the end
 
         // now we use stat() to retrieve info about the file and perform some checks on it
 
         struct stat st;
-        if(stat(path, &st)==0){ // if copy op success
-            if(!S_ISREG(st.st_mode)){ //using macro to perform regular file check
+        if (stat(path, &st) == 0)
+        { // if copy op success
+            if (!S_ISREG(st.st_mode))
+            {                   // using macro to perform regular file check
                 errno = ENOENT; // no such file
-                p=p2; // move the pointer p forward
-                if(*p2 == ':'){
-                    p++;  // not p2, since they are still at the :, p must move one step forward 
+                p = p2;         // move the pointer p forward
+                if (*p2 == ':')
+                {
+                    p++; // not p2, since they are still at the :, p must move one step forward
                 }
-                continue; // exists this if block
+                continue; // exits this if block
             }
-            *p = malloc(strlen(path)+1); // path array is local, dynamic allocation ensures that array data exists after function termination
-            if(!p){
+            *p = malloc(strlen(path) + 1); // path array is local, dynamic allocation ensures that array data exists after function termination
+            if (!p)
+            {
                 return NULL;
             }
-            strcpy(p, path); 
+            strcpy(p, *path);
             return p;
-        }else{ //file info couldn't be stored in struct or in our case - since we're assuming that the file has permissions needed and the file exits surely - file not found
+        }
+        else
+        { // file info couldn't be stored in struct or in our case - since we're assuming that the file has permissions needed and the file exits surely - file not found
             p = p2;
-            if(*p2==':'){
+            if (*p2 == ':')
+            {
                 p++;
             }
         }
     }
-    errno = ENOENT;  // while loop checks whether the PATH values exist && whether the pointer is dangling
-    return NULL; 
+    errno = ENOENT; // while loop checks whether the PATH values exist && whether the pointer is dangling
+    return NULL;
 }
 
-int do_exec_cmd(int *argc, char **argv){ //pointer to array argv
-    if(strchr(argv[0], '/')){ // if there is '/' in the first string
+int do_exec_cmd(int *argc, char **argv)
+{ // pointer to array argv
+    if (strchr(argv[0], '/'))
+    { // if there is '/' in the first string
         execv(argv[0], argv);
-    }     // execv() to replace current process (OS) with other
-    else{
+    } // execv() to replace current process (OS) with other
+    else
+    {
         char *path = search_path(argv[0]);
-        if(!path){
+        if (!path)
+        {
             return 0;
         }
         execv(path, argv);
@@ -105,3 +121,85 @@ int do_exec_cmd(int *argc, char **argv){ //pointer to array argv
     return 0;
 }
 
+static inline void free_argv(int argc, char **argv)
+{
+    if (!argc)
+    {
+        return;
+    }
+
+    while (argc--)
+    {
+        free(argv[argc]);
+    }
+}
+
+int do_simple_command(struct node_s *node)
+{
+    if (!node)
+    {
+        return 0;
+    }
+    struct node_s *child = node->first_child;
+    if (!child)
+    {
+        return 0;
+    }
+
+    int argc = 0;
+    long max_args = 255;
+    char *argv[max_args + 1]; /* keep 1 for the terminating NULL arg */
+    char *str;
+
+    while (child)
+    {
+        str = child->val.str;
+        argv[argc] = malloc(strlen(str) + 1);
+
+        if (!argv[argc])
+        {
+            free_argv(argc, argv);
+            return 0;
+        }
+
+        strcpy(argv[argc], str);
+        if (++argc >= max_args)
+        {
+            break;
+        }
+        child = child->next_sibling;
+    }
+
+    argv[argc] = NULL;
+
+    pid_t child_pid = 0;
+    if ((child_pid = fork()) == 0)
+    {
+        do_exec_cmd(argc, argv);
+        fprintf(stderr, "error: failed to execute command: %s\n", strerror(errno));
+        if (errno == ENOEXEC)
+        {
+            exit(126);
+        }
+        else if (errno == ENOENT)
+        {
+            exit(127);
+        }
+        else
+        {
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    else if (child_pid < 0)
+    {
+        fprintf(stderr, "error: failed to fork command: %s\n", strerror(errno));
+        return 0;
+    }
+
+    int status = 0;
+    waitpid(child_pid, &status, 0);
+    free_argv(argc, argv);
+
+    return 1;
+}

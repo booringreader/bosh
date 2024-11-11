@@ -4,7 +4,7 @@
 #include<string.h>
 #include"../shell/shell.h" // has prompt definitions
 #include"scanner.h"
-#include"../source.h"  // has definition of struct source_s
+#include"../source/source.h"  // has definition of struct source_s
 
 /*
 * step1 : declare variables to keep track of the token buffer (buffer refers to the memory block [generally array])
@@ -31,7 +31,7 @@ int tok_buffsize = 0; // initially
 char *tok_buff = NULL;
 
 struct token_s eof_token={
-    .text_len = 0;
+    .token_len = 0,
 };
 
 void add_to_buffer(char c){
@@ -56,39 +56,45 @@ void add_to_buffer(char c){
 }
 
 // create_token takes a string as input and returns a token structure
+// we take a string and put it inside a structre (after declaring and initialising it)
 
-struct token_s create_token(char *str){
+struct token_s *create_token(char *str){
+    // create an empty token structure that can be returned after modification
     struct token_s *tok = malloc(sizeof(struct token_s));
 
     //exception handling
     if(!tok){
-        return NULL; 
+        return; 
     }
    
     memset(tok, 0, sizeof(struct token_s)); // sets all values of token members 0
-    tok->text_len = strlen(str); 
+    tok->token_len = strlen(str); 
     /*
     * inside structure tok
-    *   text_len != strlen(str); *text = NULL; struct source = NULL;
+    *   text_len == strlen(str); *text = NULL; struct source = NULL;
     */
-    char *nstr = malloc(tok->text_len+1); 
+
+   // pointer to track the token (not structure but the actual token data)
+    char *nstr = malloc(tok->token_len+1); 
 
     if(!nstr){
         free(tok);
-        return NULL;
+        return;
         // if the token structure to-be is not initialised then no utility in occupying the memory block
     }
 
+    // change the string str from contiguous storage to a format that is trackable (char by char)
+    // nstr pointer facilitates tracking each character of the string str
     strcpy(nstr, str);
-    tok->text = nstr; // text pointer tracking nstr
+    tok->token_char = nstr; // text pointer tracking nstr
 
     return tok;
     // passes out tok->text, tok->text-len, the source_s struct is still uninitialized(it is there to hold pointer to input)
 }
 
 void free_token(struct token_s *tok){
-    if(tok->text){
-        free(tok->text); // free only the pointer to the token text;
+    if(tok->token_char){
+        free(tok->token_char); // free only the pointer to the token text;
     }
     free(tok); // free entire structure memory block
 }
@@ -110,7 +116,7 @@ struct token_s *tokenize(struct source_s *src){
     //implies to keep scanning forward
     if(!src || !src->buffer || !src->buffersize){ // validity of structure pointer, and pointers inside structure
         errno = ENODATA;
-        return eof_token;
+        return &eof_token;
     }
 
     if(!tok_buff){ //checks validity of text buffer
@@ -120,7 +126,7 @@ struct token_s *tokenize(struct source_s *src){
         //if memory not allocated, then no mem available
         if(!tok_buff){
             errno=ENOMEM;
-            return &eof_tok; // since func returns a pointer
+            return &eof_token; // since func returns a pointer
         }
     }
 
@@ -165,7 +171,7 @@ struct token_s *tokenize(struct source_s *src){
     }while((ch=next_char(src)) != EOF); // ch = ... necessary to keep on iterating
 
     // case of no input except delimiting characters
-    if(tok_bufindex == 0){
+    if(tok_buffindex == 0){
         return &eof_token;
     }
 
@@ -173,11 +179,13 @@ struct token_s *tokenize(struct source_s *src){
     if(tok_buffindex >= tok_buffsize){ // index (0-1023) >= size(1024)
        tok_buffindex--;
     } // why is this part necessary if add_to_buffer() takes care of allocating memory
-    // the do-while loop adds the next character before checking for the EOF, i.e it will also add the EOF upon reaching the buff_size index; the corresponding symbol to mark the end of string is '\0'; hence tok_buffsize--
+    // the do-while loop adds the next character before checking for the EOF, 
+    // i.e it will also add the EOF upon reaching the buff_size index; 
+    //the corresponding symbol to mark the end of string is '\0'; hence tok_buffsize--
+
     tok_buff[tok_buffindex] = '\0';
     
     // token text string has been created; convert to structure
-
     struct token_s *tok = create_token(tok_buff);
 
     //error handling incase tok is not assigned; memory buffer must've been corrupt

@@ -9,12 +9,12 @@
 * step5 : declare the functions to operate on individual nodes (definition in .c file)
 */
 
-enum node_type_e{
-    NODE COMMAND, // root node of the command passed (represents the entire AST)
-    NODE VAR, // breaks down the command and argument into child nodes
+enum node_type_e{ // defines the type of nodes we can store
+    NODE_COMMAND, // root node of the command (represents the entire AST)
+    NODE_VAR, // breaks down the command name and argument into child nodes
 };
 
-enum val_type_e{
+enum val_type_e{ // defines the type of values, we can store in a node
     VAL_SINT = 1, // signed int initialising the enum at 1
     VAL_UINT, // unsigned int
     VAL_SLLONG, // signed long long
@@ -22,7 +22,7 @@ enum val_type_e{
     VAL_FLOAT, // float
     VAL_LDOUBLE, // long double
     VAL_CHR, // charun
-    VAL_STR, // string || char pointer
+    VAL_STR, // string || char pointer ; for simple commands
 };
 
 union symval_u{ // symbol for value in union (each node can store only one type of value at a time)

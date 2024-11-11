@@ -30,7 +30,7 @@ char next_char(struct source_s *src){
         c1 = src->buffer[src->currentpos];
     }
     // when currentpos is at the very end of input string i.e last character
-    if(++src->currentpos => src->buffersize){
+    if(++src->currentpos >= src->buffersize){
         src->currentpos = src->buffersize;
         return EOF; // end of input string
     }
